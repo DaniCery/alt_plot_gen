@@ -1,4 +1,4 @@
-from alt_plot_gen.ml_logic.params import (CHUNK_SIZE,
+#from alt_plot_gen.ml_logic.params import (CHUNK_SIZE,
                                       DATASET_SIZE,
                                       VALIDATION_DATASET_SIZE)
 
@@ -32,10 +32,8 @@ def preprocess():
 
     return dataset, test_set
 
-dataset, test_set = preprocess()
 
-
-def build_train_model():
+def build_train_model(dataset):
 
     # initialize model: get_pretrained from gpt-2
     tokenizer, model = get_pretrained()
@@ -56,7 +54,6 @@ def build_train_model():
 
     return model, tokenizer
 
-model, tokenizer = build_train_model()
 
 # save model
 '''
@@ -84,10 +81,15 @@ def text_generation(test_data):
   generated_plots.append(x)
   return generated_plots
 
-#Run the functions to generate the alternative endings
-generated_plots = text_generation(test_set)
+
 
 if __name__ == '__main__':
-    preprocess()
-    build_train_model()
-    text_generation()
+    dataset, test_set = preprocess()
+    model, tokenizer = build_train_model(dataset)
+
+    #select plot you want an alternative ending of
+    selected_plot = test_set['Plot'][50]  #take the 100th of the test set as example
+    test_generated_plot = text_generation(selected_plot)
+
+    #Run the functions to generate the alternative endings
+    print(test_generated_plot)
