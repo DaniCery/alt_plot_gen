@@ -1,6 +1,6 @@
 #from alt_plot_gen.ml_logic.params import (CHUNK_SIZE,
-                                      DATASET_SIZE,
-                                      VALIDATION_DATASET_SIZE)
+#                                      DATASET_SIZE,
+#                                      VALIDATION_DATASET_SIZE)
 
 from alt_plot_gen.ml_logic.data import clean_data
 #from alt_plot_gen.ml_logic.preprocessor import preprocess_features
