@@ -1,3 +1,4 @@
+'''
 from alt_plot_gen.ml_logic.params import LOCAL_REGISTRY_PATH
 
 import mlflow
@@ -37,11 +38,11 @@ def save_model(model: Model = None,
             # STEP 1: push parameters to mlflow
             if params is not None:
                 mlflow.log_params(params)
-            '''
+
             # STEP 2: push metrics to mlflow
             if metrics is not None:
                 mlflow.log_metrics(metrics)
-            '''
+
             # STEP 3: push model to mlflow
             if model is not None:
 
@@ -62,14 +63,15 @@ def save_model(model: Model = None,
         print(f"- params path: {params_path}")
         with open(params_path, "wb") as file:
             pickle.dump(params, file)
-    '''
+
+
     # save metrics
     if metrics is not None:
         metrics_path = os.path.join(LOCAL_REGISTRY_PATH, "metrics", timestamp + ".pickle")
         print(f"- metrics path: {metrics_path}")
         with open(metrics_path, "wb") as file:
             pickle.dump(metrics, file)
-    '''
+
     # save model
     if model is not None:
         model_path = os.path.join(LOCAL_REGISTRY_PATH, "models", timestamp)
@@ -162,3 +164,4 @@ def get_model_version(stage="Production"):
     # model version not handled
 
     return None
+'''

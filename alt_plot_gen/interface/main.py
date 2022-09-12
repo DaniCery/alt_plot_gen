@@ -1,6 +1,6 @@
-from alt_plot_gen.ml_logic.params import (CHUNK_SIZE,
-                                      DATASET_SIZE,
-                                      VALIDATION_DATASET_SIZE)
+#from alt_plot_gen.ml_logic.params import (CHUNK_SIZE,
+#                                      DATASET_SIZE,
+#                                      VALIDATION_DATASET_SIZE)
 
 from alt_plot_gen.ml_logic.data import clean_data
 #from alt_plot_gen.ml_logic.preprocessor import preprocess_features
@@ -32,13 +32,13 @@ def preprocess():
 
     return dataset, test_set
 
-dataset, test_set = preprocess()
 
-
-def build_train_model():
+def build_train_model(dataset):
 
     # initialize model: get_pretrained from gpt-2
     tokenizer, model = get_pretrained()
+
+    print(f"\n✅ got pretrained model")
 
     # model params
     batch_size=16
@@ -54,9 +54,10 @@ def build_train_model():
                 gpt2_type="gpt2", output_dir=".", output_prefix="wreckgar",
                 test_mode=False,save_model_on_epoch=False)
 
+    print(f"\n✅ data trained")
+
     return model, tokenizer
 
-model, tokenizer = build_train_model()
 
 # save model
 '''
@@ -76,18 +77,50 @@ params = dict(
 #save_model(model=model, params=params)  #, metrics=dict(mae=val_mae)
 '''
 
-#Function to generate multiple sentences. Test data should be a dataframe
-def text_generation(test_data):
-  generated_plots = []
-  #for i in range(len(test_data)):
-  x = generate(model, tokenizer, test_data['Plot'][100], entry_count=1)  #top_p=0.8, temperature=1.
-  generated_plots.append(x)
-  return generated_plots
+#Function to generate multiple sentences
+def text_generation(model, tokenizer, test_data):
+    #generated_plots = []
+    #for i in range(len(test_data)):
 
-#Run the functions to generate the alternative endings
-generated_plots = text_generation(test_set)
+    x = generate(model, tokenizer, test_data, entry_count=1)  #top_p=0.8, temperature=1.
+
+    #generated_plots.append(x)
+
+    print(f"\n✅ generation created")
+
+    #show only generated text
+    a = test_data.split()[-200:] #Get the matching string we want (200 words)
+    b = ' '.join(a)
+    c = ' '.join(x) #Get all that comes after the matching string
+    my_generation = c.split(b)[-1]
+
+    #Finish the sentences when there is a point, remove after that
+    just_alternative =[]
+    to_remove = my_generation.split('.')[-1]
+    just_alternative = my_generation.replace(to_remove,'')
+    return just_alternative, x
+
+
 
 if __name__ == '__main__':
-    preprocess()
-    build_train_model()
-    text_generation()
+
+    dataset, test_set = preprocess()
+    model, tokenizer = build_train_model(dataset)
+
+    #select plot you want an alternative ending of
+    #index (from 0 to 200) of the movie you want to test (set input_raw you want to ask the user to insert from console)
+    i = 100
+    selected_plot = test_set['Plot'][i]  #take the 100th of the test set as example
+
+    #Run the functions to generate the alternative endings
+    alternative_end, full_test_generated_plot = text_generation(model, tokenizer, selected_plot)
+
+    #print results
+    print('\n ✅ Base Plot: ')
+    print(selected_plot)
+    print('\n ✅ True end: ')
+    print(test_set['True_end_plot'][i])
+    print('\n ✅ Alternative end: ')
+    print(alternative_end)
+    print('\n ✅ Full plot with alternative ending: ')
+    print(full_test_generated_plot)
