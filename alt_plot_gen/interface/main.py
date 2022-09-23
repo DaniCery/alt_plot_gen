@@ -16,7 +16,7 @@ def preprocess():
     2) preprocessing
     3) tokenizing
     """
-    print("\n⭐️ use case: preprocess")
+    print("\n⭐️ Start...")
 
     df, test_set = clean_data()
 
@@ -28,8 +28,6 @@ def preprocess():
 
     dataset = tokenize_plots(df)  #list of tensors (tokenized plots) #all genres
 
-    print(f"\n✅ data tokenized")
-
     return dataset, test_set
 
 
@@ -38,7 +36,7 @@ def build_train_model(dataset):
     # initialize model: get_pretrained from gpt-2
     tokenizer, model = get_pretrained()
 
-    print(f"\n✅ got pretrained model")
+    print(f"\n✅ got gpt-2 pretrained model")
 
     # model params
     batch_size=16
@@ -53,8 +51,6 @@ def build_train_model(dataset):
                 max_seq_len=max_seq_len, warmup_steps=warmup_steps,
                 gpt2_type="gpt2", output_dir=".", output_prefix="wreckgar",
                 test_mode=False,save_model_on_epoch=False)
-
-    print(f"\n✅ data trained")
 
     return model, tokenizer
 
@@ -95,10 +91,10 @@ def text_generation(model, tokenizer, test_data):
     my_generation = c.split(b)[-1]
 
     #Finish the sentences when there is a point, remove after that
-    just_alternative =[]
     to_remove = my_generation.split('.')[-1]
-    just_alternative = my_generation.replace(to_remove,'')
-    return just_alternative, x
+    final = my_generation.replace(to_remove,'')
+
+    return final
 
 
 
@@ -113,7 +109,7 @@ if __name__ == '__main__':
     selected_plot = test_set['Plot'][i]  #take the 100th of the test set as example
 
     #Run the functions to generate the alternative endings
-    alternative_end, full_test_generated_plot = text_generation(model, tokenizer, selected_plot)
+    full_test_generated_plot = text_generation(model, tokenizer, selected_plot)
 
     #print results
     print('\n ✅ Base Plot: ')
@@ -121,6 +117,6 @@ if __name__ == '__main__':
     print('\n ✅ True end: ')
     print(test_set['True_end_plot'][i])
     print('\n ✅ Alternative end: ')
-    print(alternative_end)
+    print(full_test_generated_plot[len(selected_plot)-2:])
     print('\n ✅ Full plot with alternative ending: ')
     print(full_test_generated_plot)

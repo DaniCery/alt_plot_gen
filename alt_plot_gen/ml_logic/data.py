@@ -31,8 +31,7 @@ def clean_plot(plot):
     aux = aux.replace("\\'", "\'")
     aux = re.sub("\'", '"', aux) #replace "\'" for "'"
     aux = re.sub('"', "'", aux)
-    aux = re.sub("\[.*?\]", '', aux) #remove squared brackets and content
-    plot_cleaned = re.sub("\([^)]*[A-Z][^)]*\)", '', aux) #remove brackets with nouns inside
+    plot_cleaned = re.sub("[\(\[].*?[\)\]]", "", aux) #remove brackets with nouns inside
     return plot_cleaned
 
 def clean_data():
@@ -43,25 +42,42 @@ def clean_data():
     # Import df_raw
     df_raw = import_dataset()
 
+    '''
+    #Already cleaned and harmonized
+
     # Clean Plot column
     df_raw['Plot'] = df_raw['Plot'].apply(clean_plot)
 
     # Harmonize Genre
     df = harmonize_genre(df_raw)
+    '''
+    df = df_raw
 
-    # Cut plot wuth more than 1024 tokens to adapt to gpt-2 medium limitations
-    df['Plot'] = df['Plot'].map(lambda x: " ".join(x.split()[:350]))  #cut all plots until the 350th word
+    df = df[df.Plot.notnull()]
 
-    #Create a very small test set to compare generated text with the reality
-    test_set = df.sample(n = 200)
-    df = df.loc[~df.index.isin(test_set.index)]
+    #boolean mask to take plots with more than 50 words: we take all the movies with more than 30 words plots to maximize the train data
+    train_set = df[df['Plot'].apply(lambda x: len(x.split()) > 30)]
+    #print('train_set length after removing plots less than 30 words length: ',len(train_set))
+    #Cut the long plots (after more than 1024 tokens, pre-training gpt2 does not work due to gpt2-medium usage limitations)
+    train_set['Plot'] = train_set['Plot'].apply(lambda x: " ".join(x.split()[:350]))  #cut all plots until the 350th word
+
+    #Select only plots with more than 100 words. We will cut 50 ending words later to extract original ending
+    test_set = df[df['Plot'].apply(lambda x: len(x.split()) > 100)]
+    test_set = test_set[test_set['Plot'].apply(lambda x: len(x.split()) < 400)]
+
+    #Create a very small test set to compare generated text with the reality (plots selectable by the app at the end)
+    test_set = test_set.sample(n = 200)
+
+    #Let's comment out the next line. Since it's not a classification problem, for our text generation project we'll stil maintain the test set values in train_set
+    #train_set = train_set.loc[~train_set.index.isin(test_set.index)]
+
+    #For the test set only, keep last 50 words in a new column, then remove them from original column to save the Original Ending
+    test_set['True_end_plot'] = test_set['Plot'].str.split().str[-50:].apply(' '.join)
+    test_set['Plot'] = test_set['Plot'].str.split().str[:-50].apply(' '.join)
 
     #Reset the indexes
     test_set = test_set.reset_index()
-    df = df.reset_index()
-    #For the test set only, keep last 50 words in a new column, then remove them from original column
-    test_set['True_end_plot'] = test_set['Plot'].str.split().str[-50:].apply(' '.join)
-    test_set['Plot'] = test_set['Plot'].str.split().str[:-50].apply(' '.join)
+    df = train_set.reset_index()   #consider training set as main df
 
     return df, test_set
 
