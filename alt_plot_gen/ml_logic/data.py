@@ -70,7 +70,10 @@ def clean_data():
     test_set = test_set[test_set['Plot'].apply(lambda x: len(x.split()) < 400)]
 
     #Create a very small test set to compare generated text with the reality (plots selectable by the app at the end)
-    test_set = test_set.sample(n = 200)
+    full_set = df[df['Plot'].apply(lambda x: len(x.split()) > 100)]
+    full_set = full_set[full_set['Release Year']>1979] #used by our app at the end (selectable only movies made from 1980)
+
+    test_set = test_set.sample(n = 200)  #used for testing
 
     #Let's comment out the next line. Since it's not a classification problem, for our text generation project we'll stil maintain the test set values in train_set
     #train_set = train_set.loc[~train_set.index.isin(test_set.index)]
@@ -79,12 +82,17 @@ def clean_data():
     test_set['True_end_plot'] = test_set['Plot'].str.split().str[-50:].apply(' '.join)
     test_set['Plot'] = test_set['Plot'].str.split().str[:-50].apply(' '.join)
 
+    #to be used by our app at the end
+    full_set['True_end_plot'] = full_set['Plot'].str.split().str[-50:].apply(' '.join)
+    full_set['Plot'] = full_set['Plot'].str.split().str[:-50].apply(' '.join)
+
     #Reset the indexes
+    full_set = full_set.reset_index()
     test_set = test_set.reset_index()
     df = train_set.reset_index()   #consider training set as main df
 
     test_path = os.environ.get("LOCAL_DATA_PATH")
-    test_set.to_csv(os.path.join(test_path,r'test_set_demo.csv'), index = False, header=True)
+    full_set.to_csv(os.path.join(test_path,r'dataset_app.csv'), index = False, header=True)
 
     return df, test_set
 

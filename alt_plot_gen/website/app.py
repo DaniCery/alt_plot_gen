@@ -1,14 +1,14 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import requests
+#import requests
 import os
 import torch
 
 from st_aggrid import AgGrid, GridUpdateMode
 from st_aggrid.grid_options_builder import GridOptionsBuilder
+from st_aggrid import DataReturnMode
 from transformers import GPT2Tokenizer
-from alt_plot_gen.interface.main  import text_generation
+from alt_plot_gen.interface.main import text_generation
 
 #from alt_plot_gen.ml_logic.params import LOCAL_DATA_PATH
 
@@ -27,7 +27,7 @@ from alt_plot_gen.interface.main  import text_generation
 #st.image(image, caption='Enter any caption here')
 
 
-test_set_file = os.path.join(os.environ.get("LOCAL_DATA_PATH"), "test_set_demo.csv")
+test_set_file = os.path.join(os.environ.get("LOCAL_DATA_PATH"), "dataset_app.csv")
 
 df = pd.read_csv(test_set_file)
 reduced_df = df[['Title', 'Release Year', 'Genre', 'Plot', 'True_end_plot']]
@@ -39,8 +39,6 @@ model = torch.load(model_path)
 tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
 
 st.set_page_config(layout="wide", page_title="Alternative Endings Generator", page_icon=os.path.join(os.environ.get("LOCAL_DATA_PATH"), "snowwhite.ico"))
-
-from st_aggrid import DataReturnMode
 
 def create_aggrid(head, df):
     st.subheader(head)
