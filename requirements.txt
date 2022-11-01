@@ -25,8 +25,18 @@ google-cloud-storage
 mlflow
 s3fs
 
+fastapi         # API framework
+pytz            # time zone management
+uvicorn         # web server
+# tests
+httpx           # HTTP client
+pytest-asyncio  # asynchronous I/O support for pytest
+
 # utilities
 six>=1.14
 joblib
 memoized-property
 termcolor
+streamlit==1.12.2
+streamlit-aggrid==0.3.3
+requests

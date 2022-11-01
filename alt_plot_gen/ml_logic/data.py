@@ -1,5 +1,6 @@
 from alt_plot_gen.data_sources.local_disk import import_dataset
 import regex as re
+import os
 
 
 def clean_plot(plot):
@@ -31,7 +32,10 @@ def clean_plot(plot):
     aux = aux.replace("\\'", "\'")
     aux = re.sub("\'", '"', aux) #replace "\'" for "'"
     aux = re.sub('"', "'", aux)
-    plot_cleaned = re.sub("[\(\[].*?[\)\]]", "", aux) #remove brackets with nouns inside
+    plot_cleaned = re.sub("[\(\[].*?[\)\]]", "", aux) #remove contents inside brackets
+    plot_cleaned = plot_cleaned.replace(' .','.').replace(' ,',',')\
+                               .replace(' ;',';').replace(' ,',',')\
+                               .replace(' ?','?').replace(' !','!') #remove white spaces left from prev line of code
     return plot_cleaned
 
 def clean_data():
@@ -78,6 +82,9 @@ def clean_data():
     #Reset the indexes
     test_set = test_set.reset_index()
     df = train_set.reset_index()   #consider training set as main df
+
+    test_path = os.environ.get("LOCAL_DATA_PATH")
+    test_set.to_csv(os.path.join(test_path,r'test_set_demo.csv'), index = False, header=True)
 
     return df, test_set
 

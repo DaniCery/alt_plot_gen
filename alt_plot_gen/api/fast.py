@@ -1,13 +1,15 @@
-#from alt_plot_gen.ml_logic.params import (CHUNK_SIZE,
-#                                      DATASET_SIZE,
-#                                      VALIDATION_DATASET_SIZE)
+from datetime import datetime
+import pytz
+import pandas as pd
+
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from alt_plot_gen.ml_logic.data import clean_data
-#from alt_plot_gen.ml_logic.preprocessor import preprocess_features
 from alt_plot_gen.ml_logic.generation import generate
 from alt_plot_gen.ml_logic.encoders import tokenize_plots
 from alt_plot_gen.ml_logic.model import get_pretrained, train
-#from alt_plot_gen.ml_logic.registry import load_model, save_model
 
 def preprocess():
     """
@@ -54,25 +56,6 @@ def build_train_model(dataset):
 
     return model, tokenizer
 
-
-# save model
-'''
-params = dict(
-    # model parameters
-    batch_size=16,
-    epochs=5
-    lr=2e-5
-    max_seq_len=400
-    warmup_steps=200
-
-    # data source
-    #training_set_size=DATASET_SIZE,
-    #val_set_size=VALIDATION_DATASET_SIZE,
-    #row_count=row_count
-    )
-#save_model(model=model, params=params)  #, metrics=dict(mae=val_mae)
-'''
-
 #Function to generate multiple sentences
 def text_generation(model, tokenizer, test_data):
     #generated_plots = []
@@ -97,19 +80,26 @@ def text_generation(model, tokenizer, test_data):
 
 
 
-if __name__ == '__main__':
+app = FastAPI()
 
+# Define a root `/` endpoint
+# http://127.0.0.1:8000/predict?pickup_datetime=2012-10-06 12:10:20&pickup_longitude=40.7614327&pickup_latitude=-73.9798156&dropoff_longitude=40.6513111&dropoff_latitude=-73.8803331&passenger_count=2
+@app.get('/predict')
+def predict(plot_number):
+    # select plot based on number
     dataset, test_set = preprocess()
-    model, tokenizer = build_train_model(dataset)
+    #model, tokenizer = build_train_model(dataset)
 
     #select plot you want an alternative ending of
     #index (from 0 to 200) of the movie you want to test (set input_raw you want to ask the user to insert from console)
-    i = 100
+    i = plot_number
     selected_plot = test_set['Plot'][i]  #take the 100th of the test set as example
 
     #Run the functions to generate the alternative endings
-    test_generated_plot = text_generation(model, tokenizer, selected_plot)
+    #test_generated_plot = text_generation(model, tokenizer, selected_plot)
 
+
+    '''
     #print results
     print('\n ✅ Base Plot: ')
     print(selected_plot)
@@ -119,3 +109,17 @@ if __name__ == '__main__':
     print(test_generated_plot)
     print('\n ✅ Full generated Plot: ')
     print(selected_plot + test_generated_plot)
+    '''
+
+
+    return {'plot_number': plot_number}
+
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
