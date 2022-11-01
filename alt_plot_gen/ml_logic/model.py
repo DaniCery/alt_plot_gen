@@ -36,44 +36,63 @@ def train(
     acc_steps = 100
     #device=torch.device("cuda")
     #model = model.cuda()
-    model.train()
 
-    optimizer = AdamW(model.parameters(), lr=lr)
-    scheduler = get_linear_schedule_with_warmup(
-        optimizer, num_warmup_steps=warmup_steps, num_training_steps=-1
-    )
+    try:
+        '''
+        #importing model from bucket
+        bucket_path_model = os.path.join('gs://',
+        os.environ.get("BUCKET_NAME"),
+        "wreckgar-49.pt")
+        '''
+        #importing model from local path
+        path_model = os.path.join(
+        os.environ.get("LOCAL_DATA_PATH"),
+        "wreckgar-49.pt")
+        model = torch.load(path_model)
 
-    train_dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
-    loss=0
-    accumulating_batch_count = 0
-    input_tensor = None
+        print('\n ✅ wreckgar-49.pt model imported',)
 
-    for epoch in range(epochs):
+    except:
+        print('\n ✅ training model... ')
+        model.train()
+        optimizer = AdamW(model.parameters(), lr=lr)
+        scheduler = get_linear_schedule_with_warmup(
+            optimizer, num_warmup_steps=warmup_steps, num_training_steps=-1
+        )
 
-        print(f"Training epoch {epoch}")
-        print(loss)
-        for idx, entry in tqdm(enumerate(train_dataloader)):
-            (input_tensor, carry_on, remainder) = pack_tensor(entry, input_tensor, 768)
+        train_dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
+        loss=0
+        accumulating_batch_count = 0
+        input_tensor = None
 
-            if carry_on and idx != len(train_dataloader) - 1:
-                continue
+        for epoch in range(epochs):
 
-            #input_tensor = input_tensor.to(device)
-            #outputs = model(input_tensor, labels=input_tensor)
-            #loss = outputs[0]
-            #loss.backward()
+            print(f"Training epoch {epoch}")
+            print(loss)
+            for idx, entry in tqdm(enumerate(train_dataloader)):
+                (input_tensor, carry_on, remainder) = pack_tensor(entry, input_tensor, 768)
 
-            if (accumulating_batch_count % batch_size) == 0:
-                optimizer.step()
-                scheduler.step()
-                optimizer.zero_grad()
-                model.zero_grad()
+                if carry_on and idx != len(train_dataloader) - 1:
+                    continue
 
-            accumulating_batch_count += 1
-            input_tensor = None
-        if save_model_on_epoch:
-            torch.save(
-                model.state_dict(),
-                os.path.join(output_dir, f"{output_prefix}-{epoch}.pt"),
-            )
+                #input_tensor = input_tensor.to(device)
+                #outputs = model(input_tensor, labels=input_tensor)
+                #loss = outputs[0]
+                #loss.backward()
+
+                if (accumulating_batch_count % batch_size) == 0:
+                    optimizer.step()
+                    scheduler.step()
+                    optimizer.zero_grad()
+                    model.zero_grad()
+
+                accumulating_batch_count += 1
+                input_tensor = None
+            if save_model_on_epoch:
+                torch.save(
+                    model.state_dict(),
+                    os.path.join(output_dir, f"{output_prefix}-{epoch}.pt"),
+                )
+        print(f"\n✅ data trained")
+        
     return model

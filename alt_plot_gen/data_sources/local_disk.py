@@ -11,7 +11,7 @@ def import_dataset():
 
     path = os.path.join(
         os.environ.get("LOCAL_DATA_PATH"),
-        "wiki_movie_plots_deduped.csv")
+        "final_dataset_harmonized.csv")
 
     try:
 

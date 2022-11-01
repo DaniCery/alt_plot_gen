@@ -1,4 +1,4 @@
-'''
+
 from alt_plot_gen.ml_logic.params import LOCAL_REGISTRY_PATH
 
 import mlflow
@@ -8,7 +8,7 @@ import glob
 import os
 import time
 import pickle
-
+'''
 from colorama import Fore, Style
 
 from tensorflow.keras import Model, models
@@ -165,3 +165,14 @@ def get_model_version(stage="Production"):
 
     return None
 '''
+def load_model(save_copy_locally=False) -> Model:
+    """
+    load the latest saved model, return None if no model found
+    """
+     #importing model from local path
+    path_model = os.path.join(
+    os.environ.get("LOCAL_DATA_PATH"),
+        "wreckgar-49.pt")
+    model = torch.load(path_model)
+
+    return model

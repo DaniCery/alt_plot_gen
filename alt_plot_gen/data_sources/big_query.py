@@ -17,7 +17,7 @@ def import_dataset() -> pd.DataFrame:
     '''
     bucket_path = os.path.join('gs://',
         os.environ.get("BUCKET_NAME"),
-        "wiki_movie_plots_deduped.csv")
+        "final_dataset_harmonized.csv")
 
     big_query_df = pd.read_csv(bucket_path)  # read all rows
 
